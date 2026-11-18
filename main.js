@@ -1,3 +1,4 @@
+import { createEconomy } from "./economy.js";
 import { createMasterTools } from "./master-tools.js";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.119.0";
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from "./config.js";
@@ -12,7 +13,11 @@ const masterTools = createMasterTools({
   supabase,root:$("#master-tools"),currentUser:()=>user,
   getCharacters:()=>characters,onAward:loadData,
 });
-const listFields = ["saves","skills","attacks","weapons","relics","inventory","companions","talents"];
+const listFields = ["saves","skills","attacks","weapons","relics","companions","talents"];
+const economy = createEconomy({
+  supabase, getUser:()=>user, getCharacter:()=>selected, getCharacters:()=>characters,
+  canEdit:canEditSheet, reload:loadData, notify,
+});
 $("#parent-deity").insertAdjacentHTML("beforeend",`<option value="" selected disabled>Escolha um progenitor</option>${GODS.map(g=>`<option value="${g.name}">${g.name}</option>`).join("")}`);
 $("#filter-deity").insertAdjacentHTML("beforeend",GODS.map(g=>`<option>${g.name}</option>`).join(""));
 $("#filter-item-type").insertAdjacentHTML("beforeend",[...new Set(ITEMS.map(x=>x.type))].map(x=>`<option>${x}</option>`).join(""));
@@ -21,7 +26,7 @@ $("#auth-toggle").onclick=()=>setAuth(authMode==="signup"?"login":"signup");
 $("#forgot-password").onclick=async()=>{const email=$("#auth-email").value.trim();if(!email)return $("#auth-message").textContent="Digite seu e-mail primeiro.";const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin});$("#auth-message").textContent=error?error.message:"Se a conta existir, enviaremos instruções para redefinir a senha.";};
 $("#auth-form").onsubmit=async e=>{e.preventDefault();const msg=$("#auth-message"),email=$("#auth-email").value.trim(),password=$("#auth-password").value;$("#auth-submit").disabled=true;msg.textContent="Conectando ao acampamento…";let result;if(authMode==="signup")result=await supabase.auth.signUp({email,password,options:{data:{display_name:$("#auth-display-name").value.trim()},emailRedirectTo:location.origin}});else result=await supabase.auth.signInWithPassword({email,password});$("#auth-submit").disabled=false;if(result.error){msg.textContent=result.error.message;return;}if(authMode==="signup"&&!result.data.session){msg.textContent="Conta criada. Confirme o e-mail para entrar; o projeto exige confirmação no Auth.";return;}msg.textContent="";await openApp(result.data.user);};
 $("#sign-out").onclick=()=>supabase.auth.signOut();
-supabase.auth.onAuthStateChange((_event,session)=>{if(session?.user)openApp(session.user);else{masterTools.close();user=null;master=false;characters=[];profiles=[];selected=null;editId=null;$("#character-dialog").close();$("#inventory-dialog").close();$("#full-sheet").replaceChildren();$("#character-detail").replaceChildren();$("#character-list").replaceChildren();$("#progress-list").replaceChildren();refreshSheetPermissions();delete document.documentElement.dataset.theme;nav("fichas");$("#app-view").classList.add("hidden");$("#auth-view").classList.remove("hidden");}});
+supabase.auth.onAuthStateChange((_event,session)=>{if(session?.user)openApp(session.user);else{masterTools.close();economy.clear();user=null;master=false;characters=[];profiles=[];selected=null;editId=null;$("#character-dialog").close();$("#inventory-dialog").close();$("#full-sheet").replaceChildren();$("#character-detail").replaceChildren();$("#character-list").replaceChildren();$("#progress-list").replaceChildren();refreshSheetPermissions();delete document.documentElement.dataset.theme;nav("fichas");$("#app-view").classList.add("hidden");$("#auth-view").classList.remove("hidden");}});
 async function openApp(u){if(!u)return;const firstVisit=user?.id!==u.id;user=u;master=u.app_metadata?.role==="master";if(!master||firstVisit)masterTools.close();$("#auth-view").classList.add("hidden");$("#app-view").classList.remove("hidden");$("#account-email").textContent=u.email||"";$("#role-badge").classList.toggle("hidden",!master);$("#export-campaign").classList.toggle("hidden",!master);refreshSheetPermissions();nav(master&&firstVisit?"mestre":currentPage);await supabase.from("rpg_profiles").upsert({id:u.id,email:u.email,display_name:u.user_metadata?.display_name||u.email?.split("@")[0]},{onConflict:"id"});await loadData();}
 async function loadData() {
   const account = user;
@@ -56,6 +61,7 @@ async function loadData() {
   selected = characters.find(row => row.id === selected?.id) || (isMaster ? null : characters[0] || null);
   render();
   masterTools.refreshCharacters();
+  await economy.loadCatalog();
 }
 function canEditSheet(row) {
   return Boolean(user && row && (master || row.owner_id === user.id));
@@ -130,7 +136,7 @@ function renderRoster(rows) {
     };
   });
 }
-function render(){refreshSheetPermissions();renderMasterSummary();const rows=master?visible():characters;if(master&&currentPage==="fichas"&&!rows.some(row=>row.id===selected?.id))selected=rows[0]||null;const activeTheme=selected?themeForCharacter(selected):null;if(activeTheme)document.documentElement.dataset.theme=activeTheme.id;else delete document.documentElement.dataset.theme;$("#metric-count").textContent=characters.length;$("#visible-count").textContent=rows.length;$("#metric-level").textContent=characters.length?(characters.reduce((n,c)=>n+(+c.level||1),0)/characters.length).toFixed(1):"—";renderRoster(rows);$("#character-detail").innerHTML=selected&&rows.some(x=>x.id===selected.id)?detail(selected):`<div class="detail-empty"><span>✧</span><h2>${master?"Escolha uma ficha":"Sua ficha ainda não foi criada"}</h2><p>${master?"Selecione um personagem na lista.":"Use Nova ficha para criar seu semideus."}</p></div>`;if(activeTheme)$("#character-detail").dataset.theme=activeTheme.id;else delete $("#character-detail").dataset.theme;renderFullSheet();$$("[data-open-sheet]").forEach(b=>b.onclick=openFullSheet);$$("[data-edit]").forEach(b=>b.onclick=()=>openEditor(selected));$("#progress-list").innerHTML=characters.map(c=>{const d=dataOf(c),need=xpFor(+c.level),theme=themeForCharacter(c);return `<article class="progress-card" data-theme="${theme.id}"><div><p class="kicker">${esc(c.parent_deity)}</p><h3>${esc(c.display_name)}</h3><p>Nível ${c.level} · ${+d.xp||0} XP ${need?`/ ${need} XP para evoluir`:"· nível máximo"}</p></div><button class="button secondary" data-progress="${c.id}" ${!master?"disabled":""}>Aplicar evolução</button></article>`}).join("")||"<p class='empty-state'>Crie uma ficha para acompanhar a progressão.</p>";$$("[data-progress]").forEach(b=>b.onclick=()=>progress(b.dataset.progress));renderItems();renderRules();}
+function render(){refreshSheetPermissions();renderMasterSummary();const rows=master?visible():characters;if(master&&currentPage==="fichas"&&!rows.some(row=>row.id===selected?.id))selected=rows[0]||null;const activeTheme=selected?themeForCharacter(selected):null;if(activeTheme)document.documentElement.dataset.theme=activeTheme.id;else delete document.documentElement.dataset.theme;$("#metric-count").textContent=characters.length;$("#visible-count").textContent=rows.length;$("#metric-level").textContent=characters.length?(characters.reduce((n,c)=>n+(+c.level||1),0)/characters.length).toFixed(1):"—";renderRoster(rows);$("#character-detail").innerHTML=selected&&rows.some(x=>x.id===selected.id)?detail(selected):`<div class="detail-empty"><span>✧</span><h2>${master?"Escolha uma ficha":"Sua ficha ainda não foi criada"}</h2><p>${master?"Selecione um personagem na lista.":"Use Nova ficha para criar seu semideus."}</p></div>`;if(activeTheme)$("#character-detail").dataset.theme=activeTheme.id;else delete $("#character-detail").dataset.theme;renderFullSheet();$$("[data-open-sheet]").forEach(b=>b.onclick=openFullSheet);$$("[data-edit]").forEach(b=>b.onclick=()=>openEditor(selected));$("#progress-list").innerHTML=characters.map(c=>{const d=dataOf(c),need=xpFor(+c.level),theme=themeForCharacter(c);return `<article class="progress-card" data-theme="${theme.id}"><div><p class="kicker">${esc(c.parent_deity)}</p><h3>${esc(c.display_name)}</h3><p>Nível ${c.level} · ${+d.xp||0} XP ${need?`/ ${need} XP para evoluir`:"· nível máximo"}</p></div><button class="button secondary" data-progress="${c.id}" ${!master?"disabled":""}>Aplicar evolução</button></article>`}).join("")||"<p class='empty-state'>Crie uma ficha para acompanhar a progressão.</p>";$$("[data-progress]").forEach(b=>b.onclick=()=>progress(b.dataset.progress));economy.render();renderRules();}
 function portraitFrame(value = {}) {
   const bounded = (entry, fallback, min, max) => (
     entry == null || !Number.isFinite(Number(entry)) ? fallback : Math.min(max, Math.max(min, Number(entry)))
@@ -157,7 +163,7 @@ function inventorySection(character) {
 }
 
 function detail(c,full=false){const d=dataOf(c),a=sheetAttributes(d),stats=derived(a,d.armor_bonus||0),g=GODS.find(x=>x.name===c.parent_deity),theme=themeForCharacter(c);const photo=c.portraitUrl||d.portrait_url;const portrait=photo?`<div class="portrait portrait-frame" style="${portraitStyle(d.portrait_frame)}"><img src="${esc(photo)}" alt="Retrato de ${esc(c.display_name)}"></div>`:`<div class="portrait-placeholder">${esc(c.display_name?.slice(0,1)||"✦")}</div>`;return `<div class="theme-banner" data-theme="${theme.id}"><span class="theme-banner-symbol" aria-hidden="true">${theme.symbol}</span><div><p class="kicker">FICHA · FILHO(A) DE ${esc(theme.deity.toLocaleUpperCase("pt-BR"))}</p><h2>${esc(theme.epithet)}</h2></div><span class="theme-banner-level">NÍVEL ${c.level}</span></div><div class="hero-card" data-theme="${theme.id}">${portrait}<div class="hero-info"><p class="kicker">${esc(c.parent_deity)} · NÍVEL ${c.level}</p><h2${full?' id="full-sheet-title" tabindex="-1"':""}>${esc(c.display_name)}</h2><p>${esc(d.tagline||"Filho do Olimpo, herói da campanha.")}</p><div class="sheet-actions">${master&&!full?'<button type="button" class="button gold" data-open-sheet>Abrir ficha</button>':''}${canEditSheet(c)?'<button type="button" class="button secondary" data-edit>Editar ficha</button>':''}${canEditSheet(c)?'<button type="button" class="button secondary" data-adjust-portrait>Ajustar foto</button>':''}</div></div></div><div class="stat-strip" data-theme="${theme.id}"><div><small>PONTOS DE VIDA</small><b>${esc(d.hp_current??20)}<i> / ${esc(d.hp_max??20)}</i></b></div><div><small>DEFESA</small><b>${stats.defense}</b></div><div><small>XP</small><b>${esc(d.xp||0)}<i> / ${xpFor(+c.level)||"—"}</i></b></div></div><div class="detail-block" data-theme="${theme.id}"><h3>Atributos</h3><div class="attribute-bars">${Object.entries(ATTRS).map(([k,n])=>`<div><span>${n}</span><b>${a[k]||0}</b></div>`).join("")}</div></div><div class="detail-block" data-theme="${theme.id}"><h3>Poder de linhagem</h3><p><b>${esc(g?.power||"Não registrado")}</b>${g?' <span class="muted">· 1 uso por combate</span>':''}</p></div><div class="detail-block" data-theme="${theme.id}"><h3>Perícias & poderes</h3><p>${esc([...sheetList(d.skills),...sheetList(d.attacks)].join(" · ")||"Sem registros")}</p></div><div class="detail-block" data-theme="${theme.id}"><h3>História</h3><p>${esc(d.backstory||"Ainda não registrada.")}</p></div>${full?"":inventorySection(c)}`;}
-function renderItems(){const term=$("#search-items").value.trim().toLocaleLowerCase("pt-BR"),type=$("#filter-item-type").value;$("#item-grid").innerHTML=ITEMS.filter(x=>(!type||x.type===type)&&(!term||Object.values(x).join(" ").toLocaleLowerCase("pt-BR").includes(term))).map(x=>`<article class="item-card"><span>${esc(x.type)}</span><h3>${esc(x.name)}</h3><p>${esc(x.effect)}</p><small>${esc(x.price)}</small></article>`).join("")||'<p class="empty-state">Nenhum item encontrado.</p>';}
+function renderItems() { economy.renderArsenal(); }
 function renderRules(){$("#rules-content").innerHTML=`<article class="rule-card"><h3>Testes de perícia</h3><p role="math">1d20 + atributo contra a dificuldade do mestre.</p>${DC.map(([n,v])=>`<p><b>${n}: CD ${v}</b></p>`).join("")}<p>Vantagem: role 2d20 e use o maior. Desvantagem: use o menor.</p></article><article class="rule-card"><h3>Atributos e combate</h3><p>Na criação: distribua +3, +2, +2, +1, +1 e +0 entre os seis atributos; depois aplique o bônus divino.</p><p>Defesa 10 + Agilidade + equipamento. Iniciativa: 1d20 + Instinto. Ataque corpo a corpo: Força; à distância: Agilidade; poderes: Vontade ou Intelecto.</p><p>Turno: mover-se, 1 ação principal e 1 ação simples. Arma leve 1d6, média 2d6, pesada 3d6. 20 natural dobra os dados de dano.</p></article><article class="rule-card"><h3>Descanso e evolução</h3><p>Descanso curto: recupere 1d6 + Vontade em PV, uma vez por cena.</p><p>XP para subir: nível atual +1, multiplicado por 10. Ao subir, zera XP, ganha +5 PV máximo e escolhe +1 atributo ou poder aprovado; limite nível 20.</p><p>Relíquia divina: a partir do nível 4, com permissão do mestre; 1 uso por combate.</p></article><article class="rule-card"><h3>Equipamento inicial</h3><p>Arma simples, mochila, cantil, 3 rações, roupas e item pessoal. 100 moedas de ouro e 50 de prata (10 pratas = 1 ouro).</p><p>Armadura de Treinamento gratuita: +2 Defesa, -3 Furtividade e -1 Movimento.</p></article><article class="rule-card"><h3>Progenitores divinos</h3><div class="god-grid">${GODS.map(g=>`<p><b>${g.name}</b><br>+2 ${g.bonus}<br>${g.power}</p>`).join("")}</div></article>`;}
 function renderMasterSummary() {
   if (!master) return;
@@ -417,15 +423,10 @@ inventoryForm.onsubmit = async event => {
   if (!canEditSheet(target) || saveInventoryButton.disabled) return;
   const accountId = user.id;
   const isMaster = master;
-  const data = {...target.data, inventory:sheetList(inventoryItems.value)};
   saveInventoryButton.disabled = true;
   inventoryError.classList.add("hidden");
   try {
-    let query = supabase.from("rpg_characters").update({data}).eq("id",target.id).eq("revision",target.revision);
-    if (!isMaster) query = query.eq("owner_id",accountId);
-    const {data:saved,error} = await query.select("id").maybeSingle();
-    if (error) throw error;
-    if (!saved) throw Error("A ficha mudou em outra sessão. Copie os itens que você digitou e reabra o inventário para ver a versão atual.");
+    if (!await economy.saveInventory(target,inventoryItems.value)) return;
     if (user?.id !== accountId || master !== isMaster) return;
     inventoryDialog.close();
     await loadData();
@@ -536,7 +537,7 @@ characterForm.onsubmit = async event => {
   if (previous.attributes && typeof previous.attributes === "object") {
     data.attributes = {...previous.attributes, ...attrs};
   }
-  for (const key of ["xp","armor_bonus","favor","dracmas","gold","silver"]) data[key] = number(key);
+  for (const key of ["xp","armor_bonus","favor","dracmas"]) data[key] = number(key);
   for (const key of ["player_name","cabin","origin","tagline","lineage","path","personality","backstory","campaign_notes"]) {
     data[key] = fields.get(key);
   }

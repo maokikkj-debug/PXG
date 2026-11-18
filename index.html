@@ -54,6 +54,10 @@
         <button class="nav-link" data-page="regras">Regras</button>
       </nav>
       <div class="account-area">
+        <button id="character-wallet" type="button" class="character-wallet" hidden>
+          <span><img src="./coin-gold.webp" alt="" width="26" height="26"><strong id="wallet-gold">0</strong><small>ouro</small></span>
+          <span><img src="./coin-silver.webp" alt="" width="26" height="26"><strong id="wallet-silver">0</strong><small>prata</small></span>
+        </button>
         <span id="role-badge" class="role-badge hidden">MESTRE</span>
         <span id="account-email" class="account-email"></span>
         <button id="sign-out" class="icon-button" type="button" title="Sair" aria-label="Sair da conta">↪</button>
@@ -106,6 +110,42 @@
             <span class="master-arrow" aria-hidden="true">›</span>
           </button>
         </div>
+        <details id="master-economy" class="master-tools gm-card hidden">
+          <summary>Carteira e Arsenal da campanha</summary>
+          <div class="gm-main economy-master">
+            <div class="gm-row">
+              <label>Personagem <select id="economy-master-character"></select></label>
+              <p id="economy-master-balance" aria-live="polite"></p>
+              <button type="button" class="button secondary" id="economy-master-history">Histórico e reembolsos</button>
+            </div>
+            <div class="economy-master-forms">
+              <form class="gm-card" data-action="adjust">
+                <h3>Ajustar saldo</h3>
+                <label>Ouro <input type="number" name="gold" min="-9999999" max="9999999" value="0" required></label>
+                <label>Prata <input type="number" name="silver" min="-9999999" max="9999999" value="0" required></label>
+                <small>Use valores negativos para retirar moedas.</small>
+                <label>Motivo <input name="note" maxlength="240" required></label>
+                <button type="submit" class="button gold">Aplicar ajuste</button>
+              </form>
+              <form class="gm-card" data-action="grant">
+                <h3>Conceder equipamento</h3>
+                <label>Item do Arsenal <select id="economy-grant-item" name="item"></select></label>
+                <label>Nome de item fora do Arsenal <input name="custom" maxlength="120" placeholder="Opcional"></label>
+                <label>Quantidade <input type="number" name="quantity" min="1" max="99" value="1" required></label>
+                <label>Motivo ou recompensa <input name="note" maxlength="240" required></label>
+                <button type="submit" class="button gold">Conceder sem cobrar</button>
+              </form>
+              <form class="gm-card" data-action="price">
+                <h3>Modificar preço</h3>
+                <label>Item <select id="economy-price-item" name="item" required></select></label>
+                <label>Ouro <input type="number" name="gold" min="0" max="999999" required></label>
+                <label>Prata <input type="number" name="silver" min="0" max="9" required></label>
+                <button type="submit" class="button gold">Salvar preço</button>
+              </form>
+            </div>
+            <p id="economy-master-status" role="status"></p>
+          </div>
+        </details>
         <div id="master-tools" class="master-tools"></div>
       </section>
 
@@ -149,7 +189,7 @@
       <section id="page-arsenal" class="page-section hidden">
         <header class="arsenal-header">
           <span class="arsenal-emblem" aria-hidden="true">⚔</span>
-          <div><h1>Arsenal do Acampamento</h1><p>Equipamentos, proteções e consumíveis do livro do jogador.</p></div>
+          <div><h1>Arsenal do Acampamento</h1><p id="arsenal-character"></p><p id="arsenal-notice">Carregando preços do Arsenal…</p></div>
         </header>
         <div class="toolbar"><label class="search-field"><span aria-hidden="true">⌕</span><input id="search-items" type="search" placeholder="Buscar item ou efeito…" aria-label="Buscar itens"></label><select id="filter-item-type" aria-label="Filtrar categoria"><option value="">Todas as categorias</option></select></div>
         <div id="item-grid" class="item-grid"></div>
@@ -217,8 +257,6 @@
             <label class="field"><span>Bônus de Defesa de equipamento</span><input name="armor_bonus" type="number" min="0" max="20" value="2"></label>
             <label class="field"><span>Favor divino</span><input name="favor" type="number" min="0" max="999" value="0"></label>
             <label class="field"><span>Dracmas</span><input name="dracmas" type="number" min="0" max="999999" value="0"></label>
-            <label class="field"><span>Moedas de ouro</span><input name="gold" type="number" min="0" max="999999" value="100"></label>
-            <label class="field"><span>Moedas de prata</span><input name="silver" type="number" min="0" max="999999" value="50"></label>
           </div>
           <div id="derived-preview" class="derived-preview"></div>
         </section>
@@ -231,7 +269,7 @@
             <label class="field full"><span>Poderes e ataques</span><textarea name="attacks" rows="3" placeholder="Registre poderes ganhos e ataques aprovados pelo mestre"></textarea></label>
             <label class="field"><span>Armas e proteções</span><textarea name="weapons" rows="3" placeholder="Inclua armadura de treinamento, armas e escudos"></textarea></label>
             <label class="field"><span>Relíquias</span><textarea name="relics" rows="3" placeholder="Relíquias autorizadas pelo mestre"></textarea></label>
-            <label class="field"><span>Inventário</span><textarea name="inventory" rows="3" placeholder="Mochila, cantil, rações e itens"></textarea></label>
+            <p>Abra <strong>Editar inventário</strong> na ficha para adicionar ou remover itens.</p>
             <label class="field"><span>Companheiros</span><textarea name="companions" rows="2"></textarea></label>
             <label class="field full"><span>Talentos e dons adicionais</span><textarea name="talents" rows="2"></textarea></label>
           </div>
@@ -257,7 +295,7 @@
       <label class="field" for="inventory-items">
         <span>Itens de <strong id="inventory-character"></strong></span>
         <textarea id="inventory-items" rows="8" autofocus aria-describedby="inventory-help"></textarea>
-        <small id="inventory-help">Use uma linha por item. Ex.: 2 poções de cura. Apague a linha para remover o item.</small>
+        <small id="inventory-help">Use uma linha por item e escreva o nome como aparece no Arsenal. Ex.: 2 × Poção de Cura Menor. Remover um item não devolve moedas.</small>
       </label>
       <p id="inventory-error" class="inline-message hidden" role="alert"></p>
       <footer class="dialog-footer">
@@ -266,6 +304,17 @@
         <button id="save-inventory" class="button gold" type="submit">Salvar inventário</button>
       </footer>
     </form>
+  </dialog>
+  <dialog id="economy-dialog" class="editor-dialog inventory-dialog economy-dialog" aria-labelledby="economy-title">
+    <div class="editor-form">
+      <header class="dialog-header"><h2 id="economy-title">Carteira</h2><button id="economy-close" class="icon-button" type="button" aria-label="Fechar">×</button></header>
+      <form id="economy-form" hidden>
+        <div id="economy-fields"></div>
+        <button type="submit" id="economy-submit" class="button gold">Confirmar</button>
+      </form>
+      <p id="economy-message" role="alert"></p>
+      <div id="economy-history-list"></div>
+    </div>
   </dialog>
 </body>
 </html>
