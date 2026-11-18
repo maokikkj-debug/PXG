@@ -22,3 +22,109 @@ html[data-theme="apollo"] .theme-banner::before{background:linear-gradient(90deg
 #character-dialog[data-theme="apollo"] .theme-preview::before{background:linear-gradient(90deg,rgba(255,249,231,.97),rgba(255,249,231,.68)),var(--theme-image) center/cover}
 @media(max-width:600px){.theme-preview{align-items:flex-start;gap:10px;padding:11px}.theme-preview-symbol{width:36px;height:36px;font-size:1.1rem}.theme-preview small{line-height:1.4}.theme-banner{align-items:flex-start;gap:10px;padding:12px}.theme-banner-symbol{width:38px;height:38px;font-size:1.25rem}.theme-banner-level{font-size:.62rem;letter-spacing:.04em}.theme-banner h2{font-size:.9rem}html[data-theme] body::before{background-attachment:scroll;background-position:center top}}
 .auth-art .auth-copy h1,.auth-art .auth-brand b{color:#f4f1e8;text-shadow:0 2px 14px rgba(0,0,0,.38)}
+
+/* Painel compacto para a lista de personagens e para a ficha. */
+.app-view {
+  color: var(--theme-text, #182c49);
+}
+.topbar {
+  height: auto;
+  min-height: 56px;
+  padding: 6px clamp(12px, 3vw, 42px);
+  gap: 8px 16px;
+}
+.brand { min-width: 0; gap: 8px; }
+.brand b { font-size: .88rem; }
+.brand small { font-size: .51rem; }
+.brand-mark { font-size: 1.75rem; }
+.top-nav { gap: 2px; }
+.nav-link { min-height: 40px; padding: 6px 10px; }
+.account-area { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.account-email { margin: 0; max-width: 15ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.main-shell { width: min(100%, 1328px); margin: auto; padding: 16px clamp(12px, 3vw, 36px) 24px; }
+.welcome-strip { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 12px; }
+.welcome-strip .kicker, .welcome-strip .muted { margin: 0; }
+.welcome-strip h1 { font-size: clamp(1.25rem, 2.8vw, 2rem); line-height: 1.14; }
+.welcome-mark { flex: none; font-size: 1.4rem; }
+.metrics-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: stretch; gap: 8px; }
+.metric-card { padding: 7px 11px; min-width: 0; }
+.metric-card span { font-size: .59rem; letter-spacing: .05em; overflow-wrap: anywhere; }
+.metric-card b { margin-top: 2px; font-size: 1.05rem; }
+.create-button { min-height: 40px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.toolbar .search-field { flex: 1 1 190px; min-width: 0; }
+.toolbar input, .toolbar select { min-height: 40px; padding-block: 7px; }
+.toolbar select { width: auto; max-width: 100%; }
+.content-grid { grid-template-columns: minmax(200px, .7fr) minmax(0, 1.6fr); gap: 10px; }
+.roster-panel, .detail-panel { min-width: 0; min-height: 0; padding: 12px; }
+.roster-panel { border: 1px solid var(--theme-line, #d7c6a5); background: var(--theme-surface, #fffdf7); border-radius: 12px; }
+.panel-heading { padding-bottom: 6px; }
+.panel-heading .kicker { margin: 0; }
+.panel-heading h2 { font-size: 1.12rem; }
+.character-list { gap: 5px; margin-top: 8px; }
+.character-card { gap: 8px; padding: 6px 8px; min-height: 44px; }
+.character-card>span:nth-child(2), .hero-info { min-width: 0; overflow-wrap: anywhere; }
+.character-card .avatar { flex: none; width: 32px; height: 32px; }
+.character-card small { margin-top: 2px; }
+.theme-banner { gap: 8px; margin-bottom: 8px; padding: 7px 9px; }
+.theme-banner-symbol { width: 30px; height: 30px; font-size: 1rem; }
+.theme-banner h2 { margin-top: 2px; font-size: .9rem; }
+.theme-banner-level { font-size: .65rem; }
+.hero-card { gap: 10px; padding-bottom: 8px; }
+.hero-info h2 { font-size: clamp(1.12rem, 2.5vw, 1.65rem); line-height: 1.15; }
+.hero-info .kicker, .hero-info p { margin: 4px 0; }
+.hero-info .button { min-height: 40px; padding: 5px 10px; }
+.portrait, .portrait-placeholder { flex: none; width: 76px; height: 88px; font-size: 1.7rem; }
+.stat-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 8px 0; }
+.stat-strip b { margin-top: 2px; font-size: 1.1rem; }
+.detail-block { padding: 7px 0; }
+.detail-block h3, .detail-block p { margin: 4px 0; }
+.attribute-bars { gap: 5px; }
+.attribute-bars div { padding: 6px; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.empty-state, .empty-detail, .detail-empty { padding: 12px 6px; text-align: center; }
+.detail-empty span { font-size: 1.65rem; }
+.editor-dialog { width: min(850px, calc(100vw - 16px)); max-height: 92dvh; }
+.editor-form { padding: 12px; }
+.form-columns, .form-grid { gap: 8px; }
+.form-section { padding: 10px; min-width: 0; }
+.form-grid .field { margin: 4px 0; min-width: 0; }
+
+/* As artes são prévias da interface: aparecem nas faixas, com o restante do fundo limpo. */
+html[data-theme] body::before {
+  background-image: radial-gradient(ellipse at 65% 0%, var(--theme-glow), transparent 63%);
+  background-attachment: scroll;
+}
+html[data-theme="apollo"] body { background: #f3e6cf; }
+html[data-theme="apollo"] body::before { background-image: radial-gradient(ellipse at 65% 0%, #ffcf79, transparent 65%); }
+html[data-theme] .nav-link { color: var(--theme-text); }
+html[data-theme] .nav-link.active { color: var(--theme-highlight); }
+html[data-theme] .app-view .kicker { color: var(--theme-highlight); }
+html[data-theme] .search-field input { background: transparent; }
+html[data-theme="apollo"] .search-field,
+html[data-theme="apollo"] .toolbar select { background: #fff8e8; }
+html[data-theme] .character-card[data-theme]::before { background: radial-gradient(ellipse at 100% 0%, var(--theme-glow), transparent 76%); }
+
+@media (min-width: 701px) {
+  .character-list { max-height: min(68vh, 650px); overflow-y: auto; padding: 2px; }
+}
+@media (max-width: 850px) {
+  .topbar { flex-wrap: nowrap; }
+  .top-nav { order: initial; width: auto; }
+}
+@media (max-width: 700px) {
+  .content-grid { grid-template-columns: minmax(0, 1fr); }
+  .topbar { flex-wrap: wrap; gap: 3px 8px; }
+  .top-nav { order: 3; width: 100%; }
+  .top-nav .nav-link { flex: 1; padding: 5px 2px; }
+  .character-list { max-height: 156px; overflow-y: auto; padding: 2px; }
+  .metrics-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .create-button { grid-column: 1 / -1; }
+  .welcome-strip .muted { font-size: .82rem; }
+}
+@media (max-width: 420px) {
+  .account-email { display: none; }
+  .toolbar select { flex: 1 1 auto; min-width: 0; }
+  .hero-card { align-items: flex-start; }
+  .theme-banner { flex-wrap: wrap; }
+  .theme-banner-level { margin-left: 0; }
+}
