@@ -33,3 +33,11 @@ O build grava a versão estática em `dist/`. A Vercel deve usar `npm run build`
 - O mestre só pode listar contas que já acessaram o site e receberam um registro em `rpg_profiles`.
 - Retratos permanecem em bucket privado e a URL assinada é gerada ao abrir a sessão, sem armazenar o token temporário na ficha.
 - Ative a confirmação de e-mail conforme a política da mesa; o app respeita a configuração atual do Supabase Auth.
+
+## Central do Mestre
+
+`master-schema.sql` configura as tabelas privadas e a função de recompensas. Aplique a migração no projeto Supabase antes de liberar a interface. Use o campo confiável `app_metadata.role = master` atribuído pelo administrador. O servidor aplica RLS; o menu e os arquivos estáticos não contêm a campanha.
+
+Para importar o livro em um ambiente autorizado, execute `python3 prepare-master-book.py caminho-do-livro.pdf diretorio-privado-fora-do-repositorio` com Poppler instalado. A ferramenta prepara CSV, JSON e um script de instalação para o SQL Editor. Use o script integral somente em uma instalação nova. Se o esquema já estiver aplicado, importe apenas a linha do livro para `public.rpg_master_books`. Mantenha tanto o PDF quanto a saída da importação fora de repositórios, builds e prévias públicas.
+
+`master-verify.sql` verifica o conteúdo importado e a recusa de leitura/registro de XP em uma sessão com papel de jogador, incluindo metadados editáveis que não concedem autorização. O controle de XP mantém a evolução existente e evita duplicar uma origem para o mesmo personagem. Use a mesma origem para XP por objetivo ou combate.

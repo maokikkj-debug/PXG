@@ -5,3 +5,9 @@ dist/
 !.env.example
 .DS_Store
 .vercel/
+
+# Local outputs of the master book importer must stay outside the public checkout.
+book.json
+book.csv
+install.sql
+Herois_do_Olimpo_Livro_do_Mestre*.pdf
