@@ -27,7 +27,7 @@ if (finalKey.includes("service_role") || finalKey.includes("secret")) {
 
 await fs.rm("dist", { recursive: true, force: true });
 await fs.mkdir("dist", { recursive: true });
-for (const file of ["index.html", "main.js", "rules.js", "styles.css", "master-underworld.webp"]) {
+for (const file of ["index.html", "main.js", "rules.js", "styles.css", "master-underworld.webp", "master-tools.js"]) {
   await fs.copyFile(file, `dist/${file}`);
 }
 await fs.copyFile("themes.js", "dist/themes.js");
