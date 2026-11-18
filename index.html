@@ -47,6 +47,7 @@
         <span><b>HERÓIS DO OLIMPO</b><small>ARQUIVO DO ACAMPAMENTO</small></span>
       </a>
       <nav class="top-nav" aria-label="Seções do arquivo">
+        <button id="master-nav" class="nav-link hidden" type="button" data-page="mestre">Central do Mestre</button>
         <button class="nav-link active" data-page="fichas">Fichas</button>
         <button class="nav-link" data-page="progresso">Progresso</button>
         <button class="nav-link" data-page="arsenal">Arsenal</button>
@@ -63,6 +64,48 @@
       <section id="welcome-strip" class="welcome-strip">
         <div><p class="kicker">SEU LUGAR ENTRE OS HERÓIS</p><h1 id="page-title">Registro de semideuses</h1><p id="page-subtitle" class="muted">Consulte, organize e prepare as fichas da campanha.</p></div>
         <div class="welcome-mark" aria-hidden="true">⚡</div>
+      </section>
+
+      <section id="page-mestre" class="page-section master-dashboard hidden" aria-labelledby="master-title">
+        <div class="master-masthead" aria-hidden="true"></div>
+        <div class="master-overview">
+          <header class="master-hero">
+            <span class="master-sigil" aria-hidden="true">♆</span>
+            <h1 id="master-title" tabindex="-1">Central do Mestre</h1>
+            <p>Heróis do Olimpo</p>
+            <button type="button" class="master-launch" data-master-go="fichas">Abrir fichas da mesa <span aria-hidden="true">›</span></button>
+          </header>
+          <aside class="master-summary" aria-labelledby="master-summary-title">
+            <h2 id="master-summary-title">Sua campanha</h2>
+            <dl>
+              <div><dt>Semideuses</dt><dd id="master-sheet-count">—</dd></div>
+              <div><dt>Jogadores com ficha</dt><dd id="master-player-count">—</dd></div>
+              <div><dt>Nível médio</dt><dd id="master-average-level">—</dd></div>
+            </dl>
+          </aside>
+        </div>
+        <div class="master-shortcuts" aria-label="Ferramentas da campanha">
+          <button class="master-tile" data-master-go="fichas" type="button">
+            <span class="master-tile-art" aria-hidden="true"></span>
+            <span class="master-tile-copy"><strong>Jogadores</strong><small>Abra as fichas dos semideuses.</small></span>
+            <span class="master-arrow" aria-hidden="true">›</span>
+          </button>
+          <button class="master-tile" data-master-go="progresso" type="button">
+            <span class="master-tile-art" aria-hidden="true"></span>
+            <span class="master-tile-copy"><strong>Progressão</strong><small>Acompanhe XP e níveis.</small></span>
+            <span class="master-arrow" aria-hidden="true">›</span>
+          </button>
+          <button class="master-tile" data-master-go="arsenal" type="button">
+            <span class="master-tile-art" aria-hidden="true"></span>
+            <span class="master-tile-copy"><strong>Arsenal</strong><small>Consulte equipamentos e preços.</small></span>
+            <span class="master-arrow" aria-hidden="true">›</span>
+          </button>
+          <button class="master-tile" data-master-go="regras" type="button">
+            <span class="master-tile-art" aria-hidden="true"></span>
+            <span class="master-tile-copy"><strong>Regras</strong><small>Abra a referência da mesa.</small></span>
+            <span class="master-arrow" aria-hidden="true">›</span>
+          </button>
+        </div>
       </section>
 
       <section id="page-fichas" class="page-section">

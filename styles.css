@@ -214,3 +214,112 @@ html[data-theme] .character-card[data-theme]::before { background: radial-gradie
   z-index: 1;
   background: var(--theme-surface, #fbf8f0);
 }
+
+/* Central do Mestre — submundo. A arte de referência aparece em recortes decorativos. */
+.master-home {
+  min-height: 100dvh;
+  color: #fff0de;
+  background:
+    radial-gradient(ellipse at 42% 5%, #332345 0%, transparent 53%),
+    radial-gradient(ellipse at 60% 100%, #301715 0%, transparent 47%),
+    #110d19;
+}
+.app-view.master-home .topbar {
+  border-color: #674654;
+  color: #fff0de;
+  background: #18121ff5;
+  box-shadow: 0 4px 20px #0a050c90;
+}
+.app-view.master-home :is(.brand b,.nav-link,.account-email,.icon-button) { color: #f4e3d8; }
+.app-view.master-home :is(.brand small,.brand-mark,.nav-link.active,.role-badge) { color: #ffc98d; }
+.app-view.master-home :is(.nav-link.active,.role-badge,.icon-button) { border-color: #bb775b; }
+#master-nav { white-space: nowrap; }
+.master-dashboard { --master-art: url("./master-underworld.webp"); --master-border: #a37766; }
+.master-masthead {
+  height: clamp(75px, 14vw, 172px);
+  background-image: linear-gradient(180deg, transparent 45%, #16101ee0), var(--master-art);
+  background-size: auto, 126% auto;
+  background-position: center, left top;
+  border: 1px solid #6c4b5c;
+  border-radius: 12px 12px 0 0;
+}
+.master-overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(230px, 28%); gap: 12px; }
+.master-hero, .master-summary, .master-tile {
+  border: 1px solid var(--master-border);
+  outline: 1px solid #88584655;
+  outline-offset: -4px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #241a31, #17101d 72%);
+  color: #fff0de;
+}
+.master-hero {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  text-align: center;
+  padding: clamp(18px, 3vw, 36px);
+  background: radial-gradient(ellipse at 50% 0%, #492b43, transparent 67%), linear-gradient(135deg, #23192e, #15101e 72%);
+  box-shadow: inset 0 3px 24px #08060d88;
+}
+.master-sigil {
+  color: #ffd3a0;
+  font: 2.7rem/1 Georgia, serif;
+  text-shadow: 0 0 7px #ff583c, 0 0 20px #ff4137;
+}
+.master-hero h1 {
+  margin: 6px 0 1px;
+  font-size: clamp(1.65rem, 4.3vw, 3.75rem);
+  line-height: 1.05;
+  text-shadow: 0 3px 5px #07040a;
+}
+.master-hero p { margin: 0 0 16px; color: #e9baa5; font-family: Cinzel, Georgia, serif; letter-spacing: .09em; }
+.master-launch {
+  border: 1px solid #f6a278;
+  border-radius: 7px;
+  padding: 9px 17px;
+  min-height: 42px;
+  color: #fff6e2;
+  background: linear-gradient(120deg, #54202d, #802c24, #4f202c);
+  box-shadow: 0 0 14px #ff543965, inset 0 0 10px #ff764554;
+  font-weight: 800;
+}
+.master-launch span { margin-left: 5px; }
+.master-summary { align-self: stretch; padding: clamp(13px, 2vw, 23px); }
+.master-summary h2 { font-size: 1.15rem; margin: 0; }
+.master-summary dl { margin: 9px 0 0; }
+.master-summary dl div { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 0; border-top: 1px solid #654757; }
+.master-summary dt { color: #e2cbd7; font-size: .85rem; }
+.master-summary dd { margin: 0; color: #ffd7a1; font-weight: 800; }
+.master-shortcuts { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+.master-tile { display: grid; grid-template-columns: minmax(0,1fr) auto; text-align: left; overflow: hidden; padding: 0; }
+.master-tile-art {
+  grid-column: 1 / -1;
+  aspect-ratio: 3.2;
+  background-image: var(--master-art);
+  background-size: 525% auto;
+  background-position: var(--art-x) 66%;
+  border-bottom: 1px solid #98635d;
+}
+.master-tile:nth-child(1) { --art-x: 71.3%; }
+.master-tile:nth-child(2) { --art-x: 46%; }
+.master-tile:nth-child(3) { --art-x: 21.1%; }
+.master-tile:nth-child(4) { --art-x: 96.4%; }
+.master-tile-copy { padding: 10px 8px 10px 12px; }
+.master-tile strong { display: block; color: #ffe0b8; font: 700 1.02rem Cinzel, Georgia, serif; }
+.master-tile small, html[data-theme] .master-tile small { display: block; color: #decedb; line-height: 1.4; margin-top: 3px; }
+.master-arrow { align-self: center; padding-right: 11px; color: #ffd093; font-size: 1.35rem; }
+.master-launch:hover, .master-tile:hover { border-color: #ffb382; box-shadow: 0 0 14px #b243466e; }
+.master-launch:focus-visible, .master-tile:focus-visible { outline: 2px solid #ffdb9e; outline-offset: 2px; }
+@media (max-width: 930px) {
+  .topbar:has(#master-nav:not(.hidden)) { flex-wrap: wrap; }
+  .topbar:has(#master-nav:not(.hidden)) .top-nav { order: 3; width: 100%; overflow-x: auto; justify-content: flex-start; }
+  .topbar:has(#master-nav:not(.hidden)) .nav-link { flex: 0 0 auto; padding-inline: 9px; }
+}
+@media (max-width: 680px) {
+  .master-overview { grid-template-columns: minmax(0,1fr); gap: 8px; }
+  .master-shortcuts { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 8px; }
+  .master-summary dl { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+  .master-summary dl div { flex-direction: column; align-items: flex-start; padding: 6px 0 0; }
+  .master-summary dt { font-size: .72rem; }
+  .master-tile strong { font-size: .9rem; }
+}
