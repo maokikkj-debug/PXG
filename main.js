@@ -78,8 +78,53 @@ function dataOf(character) {
   delete data.mana;
   return {...data,theme:themeForCharacter(character).id};
 }
-function visible(){const term=$("#search-characters").value.toLocaleLowerCase("pt-BR"),deity=$("#filter-deity").value;return characters.filter(c=>(!deity||c.parent_deity===deity)&&(!term||[c.display_name,c.parent_deity,dataOf(c).player_name,...profiles.filter(profile=>profile.id===c.owner_id).flatMap(profile=>[profile.display_name,profile.email])].join(" ").toLocaleLowerCase("pt-BR").includes(term)));}
-function render(){refreshSheetPermissions();renderMasterSummary();const rows=master?visible():characters,activeTheme=selected?themeForCharacter(selected):null;if(activeTheme)document.documentElement.dataset.theme=activeTheme.id;else delete document.documentElement.dataset.theme;$("#metric-count").textContent=characters.length;$("#visible-count").textContent=rows.length;$("#metric-level").textContent=characters.length?(characters.reduce((n,c)=>n+(+c.level||1),0)/characters.length).toFixed(1):"—";$("#character-list").innerHTML=!master?"":rows.length?rows.map(c=>{const theme=themeForCharacter(c);return `<button class="character-card ${selected?.id===c.id?"selected":""}" data-theme="${theme.id}" data-id="${esc(c.id)}"><span class="avatar">${esc(c.display_name?.slice(0,1)||"✦")}</span><span><b>${esc(c.display_name)}</b><small>${esc(c.parent_deity)} · Nível ${c.level}${master?` · ${esc(dataOf(c).player_name||profiles.find(p=>p.id===c.owner_id)?.email||"")}`:""}</small></span><span class="chevron">›</span></button>`}).join(""):"<p class='empty-state'>Nenhuma ficha ainda. Crie uma para começar sua jornada.</p>";$$(".character-card").forEach(b=>b.onclick=()=>{selected=characters.find(x=>x.id===b.dataset.id);render();});$("#character-detail").innerHTML=selected&&rows.some(x=>x.id===selected.id)?detail(selected):`<div class="detail-empty"><span>✧</span><h2>${master?"Escolha uma ficha":"Sua ficha ainda não foi criada"}</h2><p>${master?"Selecione um personagem na lista.":"Use Nova ficha para criar seu semideus."}</p></div>`;if(activeTheme)$("#character-detail").dataset.theme=activeTheme.id;else delete $("#character-detail").dataset.theme;renderFullSheet();$$("[data-open-sheet]").forEach(b=>b.onclick=openFullSheet);$$("[data-edit]").forEach(b=>b.onclick=()=>openEditor(selected));$("#progress-list").innerHTML=characters.map(c=>{const d=dataOf(c),need=xpFor(+c.level),theme=themeForCharacter(c);return `<article class="progress-card" data-theme="${theme.id}"><div><p class="kicker">${esc(c.parent_deity)}</p><h3>${esc(c.display_name)}</h3><p>Nível ${c.level} · ${+d.xp||0} XP ${need?`/ ${need} XP para evoluir`:"· nível máximo"}</p></div><button class="button secondary" data-progress="${c.id}" ${!master?"disabled":""}>Aplicar evolução</button></article>`}).join("")||"<p class='empty-state'>Crie uma ficha para acompanhar a progressão.</p>";$$("[data-progress]").forEach(b=>b.onclick=()=>progress(b.dataset.progress));renderItems();renderRules();}
+function visible() {
+  const term = $("#search-characters").value.trim().toLocaleLowerCase("pt-BR");
+  const deity = $("#filter-deity").value;
+  return characters.filter(character => {
+    if (deity && character.parent_deity !== deity) return false;
+    if (!term) return true;
+    const data = dataOf(character);
+    const player = profiles.find(profile => profile.id === character.owner_id);
+    return [character.display_name,character.parent_deity,data.cabin,data.player_name,player?.display_name,player?.email]
+      .join(" ").toLocaleLowerCase("pt-BR").includes(term);
+  });
+}
+
+function renderRoster(rows) {
+  const list = $("#character-list");
+  if (!master) {
+    list.replaceChildren();
+    return;
+  }
+  if (!rows.length) {
+    const message = characters.length ? "Nenhuma ficha corresponde aos filtros." : "Nenhuma ficha cadastrada.";
+    list.innerHTML = `<p class="empty-state">${message}</p>`;
+    return;
+  }
+  list.innerHTML = rows.map(character => {
+    const theme = themeForCharacter(character);
+    const data = dataOf(character);
+    const player = profiles.find(profile => profile.id === character.owner_id);
+    const ownerName = data.player_name || player?.display_name || player?.email;
+    const active = selected?.id === character.id;
+    const photo = character.portraitUrl || data.portrait_url;
+    const initials = character.display_name?.trim().split(/\s+/).slice(0,2).map(word=>word[0]).join("") || theme.symbol;
+    return `<button type="button" class="character-card ${active ? "selected" : ""}" data-theme="${theme.id}" data-id="${esc(character.id)}" aria-pressed="${active}" aria-controls="character-detail">
+      <span class="avatar" aria-hidden="true">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : esc(initials)}</span>
+      <span><b>${esc(character.display_name)}</b><small>${esc(character.parent_deity || "Progenitor não definido")} · Nível ${esc(character.level)}${ownerName ? ` · ${esc(ownerName)}` : ""}</small></span>
+      <span class="chevron" aria-hidden="true">›</span>
+    </button>`;
+  }).join("");
+  list.querySelectorAll(".character-card").forEach(button => {
+    button.onclick = () => {
+      selected = rows.find(character => character.id === button.dataset.id);
+      render();
+      list.querySelector(".selected")?.focus({preventScroll:true});
+    };
+  });
+}
+function render(){refreshSheetPermissions();renderMasterSummary();const rows=master?visible():characters;if(master&&currentPage==="fichas"&&!rows.some(row=>row.id===selected?.id))selected=rows[0]||null;const activeTheme=selected?themeForCharacter(selected):null;if(activeTheme)document.documentElement.dataset.theme=activeTheme.id;else delete document.documentElement.dataset.theme;$("#metric-count").textContent=characters.length;$("#visible-count").textContent=rows.length;$("#metric-level").textContent=characters.length?(characters.reduce((n,c)=>n+(+c.level||1),0)/characters.length).toFixed(1):"—";renderRoster(rows);$("#character-detail").innerHTML=selected&&rows.some(x=>x.id===selected.id)?detail(selected):`<div class="detail-empty"><span>✧</span><h2>${master?"Escolha uma ficha":"Sua ficha ainda não foi criada"}</h2><p>${master?"Selecione um personagem na lista.":"Use Nova ficha para criar seu semideus."}</p></div>`;if(activeTheme)$("#character-detail").dataset.theme=activeTheme.id;else delete $("#character-detail").dataset.theme;renderFullSheet();$$("[data-open-sheet]").forEach(b=>b.onclick=openFullSheet);$$("[data-edit]").forEach(b=>b.onclick=()=>openEditor(selected));$("#progress-list").innerHTML=characters.map(c=>{const d=dataOf(c),need=xpFor(+c.level),theme=themeForCharacter(c);return `<article class="progress-card" data-theme="${theme.id}"><div><p class="kicker">${esc(c.parent_deity)}</p><h3>${esc(c.display_name)}</h3><p>Nível ${c.level} · ${+d.xp||0} XP ${need?`/ ${need} XP para evoluir`:"· nível máximo"}</p></div><button class="button secondary" data-progress="${c.id}" ${!master?"disabled":""}>Aplicar evolução</button></article>`}).join("")||"<p class='empty-state'>Crie uma ficha para acompanhar a progressão.</p>";$$("[data-progress]").forEach(b=>b.onclick=()=>progress(b.dataset.progress));renderItems();renderRules();}
 function detail(c,full=false){const d=dataOf(c),a=sheetAttributes(d),stats=derived(a,d.armor_bonus||0),g=GODS.find(x=>x.name===c.parent_deity),theme=themeForCharacter(c);const photo=c.portraitUrl||d.portrait_url;const portrait=photo?`<img class="portrait" src="${esc(photo)}" alt="Retrato de ${esc(c.display_name)}">`:`<div class="portrait-placeholder">${esc(c.display_name?.slice(0,1)||"✦")}</div>`;return `<div class="theme-banner" data-theme="${theme.id}"><span class="theme-banner-symbol" aria-hidden="true">${theme.symbol}</span><div><p class="kicker">FICHA · FILHO(A) DE ${esc(theme.deity.toLocaleUpperCase("pt-BR"))}</p><h2>${esc(theme.epithet)}</h2></div><span class="theme-banner-level">NÍVEL ${c.level}</span></div><div class="hero-card" data-theme="${theme.id}">${portrait}<div class="hero-info"><p class="kicker">${esc(c.parent_deity)} · NÍVEL ${c.level}</p><h2${full?' id="full-sheet-title" tabindex="-1"':""}>${esc(c.display_name)}</h2><p>${esc(d.tagline||"Filho do Olimpo, herói da campanha.")}</p><div class="sheet-actions">${master&&!full?'<button type="button" class="button gold" data-open-sheet>Abrir ficha</button>':''}${canEditSheet(c)?'<button type="button" class="button secondary" data-edit>Editar ficha</button>':''}</div></div></div><div class="stat-strip" data-theme="${theme.id}"><div><small>PONTOS DE VIDA</small><b>${d.hp_current??20}<i> / ${d.hp_max??20}</i></b></div><div><small>DEFESA</small><b>${stats.defense}</b></div><div><small>XP</small><b>${d.xp||0}<i> / ${xpFor(+c.level)||"—"}</i></b></div></div><div class="detail-block" data-theme="${theme.id}"><h3>Atributos</h3><div class="attribute-bars">${Object.entries(ATTRS).map(([k,n])=>`<div><span>${n}</span><b>${a[k]||0}</b></div>`).join("")}</div></div><div class="detail-block" data-theme="${theme.id}"><h3>Poder de linhagem</h3><p><b>${esc(g?.power||"Não registrado")}</b>${g?' <span class="muted">· 1 uso por combate</span>':''}</p></div><div class="detail-block" data-theme="${theme.id}"><h3>Perícias & poderes</h3><p>${esc([...sheetList(d.skills),...sheetList(d.attacks)].join(" · ")||"Sem registros")}</p></div><div class="detail-block" data-theme="${theme.id}"><h3>História</h3><p>${esc(d.backstory||"Ainda não registrada.")}</p></div>${full?"":`<div class="detail-block"><h3>Inventário</h3><p class="sheet-inventory">${esc(sheetList(d.inventory).join("\n")||"Sem itens.")}</p></div>`}`;}
 function renderItems(){const term=$("#search-items").value.trim().toLocaleLowerCase("pt-BR"),type=$("#filter-item-type").value;$("#item-grid").innerHTML=ITEMS.filter(x=>(!type||x.type===type)&&(!term||Object.values(x).join(" ").toLocaleLowerCase("pt-BR").includes(term))).map(x=>`<article class="item-card"><span>${esc(x.type)}</span><h3>${esc(x.name)}</h3><p>${esc(x.effect)}</p><small>${esc(x.price)}</small></article>`).join("")||'<p class="empty-state">Nenhum item encontrado.</p>';}
 function renderRules(){$("#rules-content").innerHTML=`<article class="rule-card"><h3>Testes de perícia</h3><p role="math">1d20 + atributo contra a dificuldade do mestre.</p>${DC.map(([n,v])=>`<p><b>${n}: CD ${v}</b></p>`).join("")}<p>Vantagem: role 2d20 e use o maior. Desvantagem: use o menor.</p></article><article class="rule-card"><h3>Atributos e combate</h3><p>Na criação: distribua +3, +2, +2, +1, +1 e +0 entre os seis atributos; depois aplique o bônus divino.</p><p>Defesa 10 + Agilidade + equipamento. Iniciativa: 1d20 + Instinto. Ataque corpo a corpo: Força; à distância: Agilidade; poderes: Vontade ou Intelecto.</p><p>Turno: mover-se, 1 ação principal e 1 ação simples. Arma leve 1d6, média 2d6, pesada 3d6. 20 natural dobra os dados de dano.</p></article><article class="rule-card"><h3>Descanso e evolução</h3><p>Descanso curto: recupere 1d6 + Vontade em PV, uma vez por cena.</p><p>XP para subir: nível atual +1, multiplicado por 10. Ao subir, zera XP, ganha +5 PV máximo e escolhe +1 atributo ou poder aprovado; limite nível 20.</p><p>Relíquia divina: a partir do nível 4, com permissão do mestre; 1 uso por combate.</p></article><article class="rule-card"><h3>Equipamento inicial</h3><p>Arma simples, mochila, cantil, 3 rações, roupas e item pessoal. 100 moedas de ouro e 50 de prata (10 pratas = 1 ouro).</p><p>Armadura de Treinamento gratuita: +2 Defesa, -3 Furtividade e -1 Movimento.</p></article><article class="rule-card"><h3>Progenitores divinos</h3><div class="god-grid">${GODS.map(g=>`<p><b>${g.name}</b><br>+2 ${g.bonus}<br>${g.power}</p>`).join("")}</div></article>`;}
@@ -98,7 +143,9 @@ function renderMasterSummary() {
 
 function nav(page) {
   if ((page === "mestre" && !master) || (page === "personagem" && (!master || !selected))) page = "fichas";
-  $("#app-view").classList.toggle("master-home", page === "mestre");
+  const masterSheets = master && (page === "fichas" || page === "personagem");
+  $("#app-view").classList.toggle("master-home", page === "mestre" || masterSheets);
+  $("#app-view").classList.toggle("master-sheets", masterSheets);
   currentPage = page;
   const navPage = page === "personagem" ? "fichas" : page;
   $$(".nav-link").forEach(button => button.classList.toggle("active", button.dataset.page === navPage));
@@ -113,6 +160,7 @@ function nav(page) {
     $("#page-title").textContent = labels[page][0];
     $("#page-subtitle").textContent = labels[page][1];
   }
+  if (masterSheets && page === "fichas") render();
 }
 
 for (const button of $$("[data-master-go]")) {
@@ -121,7 +169,7 @@ for (const button of $$("[data-master-go]")) {
     nav(button.dataset.masterGo);
     const title = button.dataset.masterGo === "arsenal" ? $("#page-arsenal h1") : $("#page-title");
     title.tabIndex = -1;
-    title.focus();
+    title.focus({preventScroll:true});
     window.scrollTo(0,0);
   };
 }

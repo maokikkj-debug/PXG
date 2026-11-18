@@ -323,3 +323,70 @@ html[data-theme] .character-card[data-theme]::before { background: radial-gradie
   .master-summary dt { font-size: .72rem; }
   .master-tile strong { font-size: .9rem; }
 }
+
+/* Arquivo da campanha, com a mesma identidade visual da Central do Mestre. */
+.master-sheets { --archive-border: #996b60; --archive-ink: #fff0dc; --archive-muted: #d6bbca; }
+.app-view.master-sheets .brand { text-decoration: none; }
+.app-view.master-sheets .welcome-strip {
+  min-height: 105px;
+  padding: 12px clamp(13px, 3vw, 28px);
+  border: 1px solid var(--archive-border);
+  border-radius: 10px;
+  background: linear-gradient(90deg,#18101ffd 12%,#1d132bec 45%,#1e122e54 100%),
+    url("./master-underworld.webp") left top / 125% auto no-repeat;
+}
+.app-view.master-sheets .welcome-strip .kicker { color: #ffd39f; }
+.app-view.master-sheets .welcome-strip h1 { color: var(--archive-ink); margin-block: 4px; }
+.app-view.master-sheets .welcome-strip h1:focus { outline: none; }
+.app-view.master-sheets .welcome-strip .muted { color: var(--archive-muted); }
+.master-sheets .welcome-mark { display: none; }
+.master-sheets .sheet-overview { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; margin-bottom: 7px; }
+.master-sheets .metrics-row { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); flex: 1 1 240px; }
+.app-view.master-sheets .metric-card,
+.app-view.master-sheets .roster-panel,
+.app-view.master-sheets .detail-panel:not([data-theme]) {
+  color: var(--archive-ink);
+  border-color: var(--archive-border);
+  background: linear-gradient(140deg,#2b1e35,#17101f 75%);
+  box-shadow: 0 8px 25px #09050d5c;
+}
+.app-view.master-sheets .metric-card span { color: #e2c9bd; }
+.app-view.master-sheets .metric-card b, .master-sheets .panel-heading .count { color: #ffd29c; }
+.master-sheets .sheet-toolbar { flex: 0 1 auto; align-items: stretch; margin: 0 0 0 auto; }
+.app-view.master-sheets .create-button {
+  color: #fff6e6;
+  border-color: #eba27e;
+  background: linear-gradient(120deg,#522132,#7d3028);
+  box-shadow: 0 0 12px #ed543b45;
+}
+.app-view.master-sheets #campaign-filters :is(.search-field,select,.button),
+.app-view.master-sheets .sheet-back {
+  color: var(--archive-ink);
+  border-color: var(--archive-border);
+  background: #201729;
+}
+.app-view.master-sheets #campaign-filters input { color: var(--archive-ink); background: transparent; }
+.app-view.master-sheets #campaign-filters input::placeholder { color: var(--archive-muted); }
+.master-sheets .content-grid { gap: 12px; }
+.master-sheets .roster-panel { padding: 12px; }
+.app-view.master-sheets .roster-panel .panel-heading { color: var(--archive-ink); border-color: #6b485a; }
+.master-sheets .panel-ornament { color: #e7ad84; }
+.app-view.master-sheets .character-card[data-theme] {
+  min-height: 56px;
+  background: linear-gradient(105deg,#22192c,#2b2135);
+  color: var(--archive-ink);
+  border-color: #684b61;
+}
+.app-view.master-sheets .character-card[data-theme] small { color: var(--archive-muted); }
+.app-view.master-sheets .character-card[data-theme]:is(:hover,.selected) { border-color: var(--theme-accent,#eaa274); box-shadow: 0 0 10px var(--theme-glow,#d75b5637); }
+.app-view.master-sheets .character-card .avatar { width: 36px; height: 36px; overflow: hidden; color: #ffd09f; background: #352739; }
+.master-sheets .character-card .avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.app-view.master-sheets .roster-panel .empty-state,
+.app-view.master-sheets .detail-panel:not([data-theme]) .detail-empty,
+.app-view.master-sheets .site-footer { color: var(--archive-muted); }
+.app-view.master-sheets .site-footer { border-color: #684b61; }
+@media (max-width: 430px) {
+  .master-sheets .sheet-toolbar { flex-basis: 100%; }
+  .master-sheets .create-button { flex: 1; }
+  .master-sheets #campaign-filters select { min-width: 130px; }
+}
