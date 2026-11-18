@@ -30,6 +30,10 @@ await fs.mkdir("dist", { recursive: true });
 for (const file of ["index.html", "main.js", "rules.js", "styles.css"]) {
   await fs.copyFile(file, `dist/${file}`);
 }
+await fs.copyFile("themes.js", "dist/themes.js");
+for (const deity of ["athena", "poseidon", "apollo", "hermes", "hephaestus", "ares", "zeus", "hades"]) {
+  await fs.copyFile(`theme-${deity}.webp`, `dist/theme-${deity}.webp`);
+}
 await fs.writeFile(
   "dist/config.js",
   "export const SUPABASE_URL = " + JSON.stringify(finalUrl) + ";\n" +

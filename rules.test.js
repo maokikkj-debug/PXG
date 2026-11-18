@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {ATTRS,GODS,ITEMS,derived,xpFor,levelUp,validateCharacter} from "./rules.js";
+import {THEMES,themeForDeity,themeForCharacter} from "./themes.js";
 test("progression XP threshold and cap",()=>{assert.equal(xpFor(1),20);assert.equal(xpFor(19),200);assert.equal(xpFor(20),null);assert.deepEqual(levelUp(1,20),{level:2,xp:0,hpGain:5});assert.throws(()=>levelUp(1,19),/necessários 20/);});
 test("derived combat values follow book attributes",()=>{assert.equal(derived({agilidade:2,instinto:1,forca:3,vontade:0,intelecto:2},2).defense,14);assert.equal(derived({instinto:1}).initiative,"1d20 + 1");});
 test("PDF system content has ten gods and searchable catalog",()=>{assert.equal(GODS.length,10);assert.ok(ITEMS.length>=30);assert.equal(Object.keys(ATTRS).length,6);});
 test("reject invalid sheet values and accept valid sheet",()=>{const c={display_name:"Davi",parent_deity:"Atena",level:1,hp_current:20,hp_max:20,attrs:{forca:3,agilidade:2,intelecto:2,presenca:1,instinto:1,vontade:0}};assert.equal(validateCharacter(c),true);assert.throws(()=>validateCharacter({...c,hp_current:21}),/PV atual/);assert.throws(()=>validateCharacter({...c,parent_deity:""}),/progenitor/);});
+test("each requested deity maps to its own bundled reference background",()=>{const pairs={Atena:"athena",Poseidon:"poseidon",Apolo:"apollo",Hermes:"hermes",Hefesto:"hephaestus",Ares:"ares",Zeus:"zeus",Hades:"hades"};for(const [deity,id] of Object.entries(pairs)){const theme=themeForDeity(deity);assert.equal(theme.id,id);assert.equal(theme.image,`./theme-${id}.webp`);assert.ok(theme.symbol);assert.ok(theme.accent);}});
+test("theme survives JSON save/load and is resolved for master and player views",()=>{const stored=JSON.parse(JSON.stringify({parent_deity:"Poseidon",data:{theme:themeForDeity("Poseidon").id}}));assert.equal(themeForCharacter(stored).id,"poseidon");assert.equal(stored.data.theme,"poseidon");assert.equal(themeForCharacter({parent_deity:"Deméter",data:{}}).id,"olympus");assert.equal(Object.keys(THEMES).length,9);});
