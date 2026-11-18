@@ -185,3 +185,24 @@ html[data-theme] .character-card[data-theme]::before { background: radial-gradie
 .sheet-roll { margin-top: 10px; }
 .sheet-roll output { align-self: center; font-weight: 700; }
 .sheet-roll output:empty { display: none; }
+
+/* Keep the campaign roster separate from the player's own sheet. */
+.sheet-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 10px 0;
+}
+.own-sheet-picker { display: grid; gap: 3px; margin-right: auto; min-width: 0; font-size: .84rem; }
+.own-sheet-picker select {
+  min-height: 40px;
+  width: min(100%, 320px);
+  padding: 6px 8px;
+  border: 1px solid var(--theme-line, #bc9555);
+  border-radius: 8px;
+  background: var(--theme-surface, #fffdf9);
+  color: var(--theme-text, #182c49);
+}
+.content-grid.personal-sheet { grid-template-columns: minmax(0, 1fr); }

@@ -66,19 +66,22 @@
       </section>
 
       <section id="page-fichas" class="page-section">
-        <div class="metrics-row">
+        <div id="campaign-metrics" class="metrics-row hidden">
           <article class="metric-card"><span>FICHAS VISÍVEIS</span><b id="metric-count">0</b></article>
           <article class="metric-card"><span>NÍVEL MÉDIO</span><b id="metric-level">—</b></article>
           <article class="metric-card"><span>NO ARQUIVO</span><b id="metric-updated">Agora</b></article>
+        </div>
+        <div class="sheet-toolbar">
+          <label id="own-sheet-picker" class="own-sheet-picker hidden">Minhas fichas <select id="own-sheet"></select></label>
           <button id="new-character" class="button gold create-button" type="button">＋ Nova ficha</button>
         </div>
-        <div class="toolbar">
+        <div id="campaign-filters" class="toolbar hidden">
           <label class="search-field"><span aria-hidden="true">⌕</span><input id="search-characters" type="search" placeholder="Buscar por nome, cabana ou jogador…" aria-label="Buscar fichas"></label>
           <select id="filter-deity" aria-label="Filtrar por progenitor"><option value="">Todos os progenitores</option></select>
           <button id="export-campaign" class="button secondary hidden" type="button">Exportar campanha</button>
         </div>
         <div id="content-grid" class="content-grid">
-          <section class="roster-panel">
+          <section id="campaign-roster" class="roster-panel hidden">
             <div class="panel-heading"><div><p class="kicker">ARQUIVO DE PERSONAGENS</p><h2>Fichas <span id="visible-count" class="count">0</span></h2></div><span class="panel-ornament">✧</span></div>
             <div id="character-list" class="character-list" aria-live="polite"></div>
           </section>
