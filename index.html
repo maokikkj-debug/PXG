@@ -60,7 +60,7 @@
     </header>
 
     <main class="main-shell">
-      <section class="welcome-strip">
+      <section id="welcome-strip" class="welcome-strip">
         <div><p class="kicker">SEU LUGAR ENTRE OS HERÓIS</p><h1 id="page-title">Registro de semideuses</h1><p id="page-subtitle" class="muted">Consulte, organize e prepare as fichas da campanha.</p></div>
         <div class="welcome-mark" aria-hidden="true">⚡</div>
       </section>
@@ -88,13 +88,21 @@
         </div>
       </section>
 
+      <section id="page-personagem" class="page-section hidden" aria-labelledby="full-sheet-title">
+        <button id="back-to-roster" class="button secondary sheet-back" type="button">← Voltar para fichas</button>
+        <article id="full-sheet" class="detail-panel"></article>
+      </section>
+
       <section id="page-progresso" class="page-section hidden">
         <div class="page-intro"><p class="kicker">A JORNADA CONTINUA</p><h2>Progresso da campanha</h2><p class="muted">Cada nível exige a meta de XP do nível atual. Ao subir, o XP volta a zero e o personagem recebe +5 PV máximos.</p></div>
         <div id="progress-list" class="progress-list"></div>
       </section>
 
       <section id="page-arsenal" class="page-section hidden">
-        <div class="page-intro"><p class="kicker">ARSENAL DO ACAMPAMENTO</p><h2>Itens, proteções e consumíveis</h2><p class="muted">Preços e efeitos seguem a edição revisada do livro da mesa.</p></div>
+        <header class="arsenal-header">
+          <span class="arsenal-emblem" aria-hidden="true">⚔</span>
+          <div><h1>Arsenal do Acampamento</h1><p>Equipamentos, proteções e consumíveis do livro do jogador.</p></div>
+        </header>
         <div class="toolbar"><label class="search-field"><span aria-hidden="true">⌕</span><input id="search-items" type="search" placeholder="Buscar item ou efeito…" aria-label="Buscar itens"></label><select id="filter-item-type" aria-label="Filtrar categoria"><option value="">Todas as categorias</option></select></div>
         <div id="item-grid" class="item-grid"></div>
       </section>
