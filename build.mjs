@@ -27,7 +27,9 @@ if (finalKey.includes("service_role") || finalKey.includes("secret")) {
 
 await fs.rm("dist", { recursive: true, force: true });
 await fs.mkdir("dist", { recursive: true });
-await fs.copyFile("index.html", "dist/index.html");
+for (const file of ["index.html", "main.js", "rules.js", "styles.css"]) {
+  await fs.copyFile(file, `dist/${file}`);
+}
 await fs.writeFile(
   "dist/config.js",
   "export const SUPABASE_URL = " + JSON.stringify(finalUrl) + ";\n" +

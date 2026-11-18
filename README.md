@@ -1,6 +1,6 @@
 # Heróis do Olimpo — Arquivo do Acampamento
 
-Aplicação responsiva de fichas para o RPG autoral Heróis do Olimpo. A interface usa azul profundo, ouro e mármore; as regras, progenitores divinos e itens foram organizados a partir do Livro do Jogador fornecido.
+Aplicação responsiva de fichas para o RPG autoral Heróis do Olimpo. A interface segue a referência de mármore claro, azul profundo e dourado; as regras, progenitores divinos e itens foram organizados a partir do Livro do Jogador fornecido.
 
 ## Recursos
 
