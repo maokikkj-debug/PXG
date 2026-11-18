@@ -438,3 +438,26 @@ html[data-theme] .character-card[data-theme]::before { background: radial-gradie
 @media (prefers-reduced-motion: no-preference) {
   .gm-menu button, .gm-main .button { transition: background-color .15s, border-color .15s; }
 }
+
+.portrait-frame, .portrait-preview { overflow: hidden; position: relative; }
+.portrait-frame img, .portrait-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--portrait-x, 50%) var(--portrait-y, 50%);
+  transform-origin: var(--portrait-x, 50%) var(--portrait-y, 50%);
+  transform: scale(var(--portrait-scale, 1));
+}
+.portrait-adjustments { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+.portrait-adjustments .portrait-preview { width: 114px; height: 132px; }
+.portrait-controls { display: grid; flex: 1 1 160px; gap: 6px; min-width: 0; }
+.portrait-controls input[type=range] { accent-color: var(--theme-accent, #c9a75c); padding: 0; }
+.portrait-controls output { margin-left: 6px; font-weight: 700; }
+.portrait-controls .button { justify-self: start; }
+.inventory-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.sheet-inventory { padding-left: 20px; margin: 8px 0; }
+.sheet-inventory li + li { margin-top: 4px; }
+.inventory-dialog { width: min(520px, calc(100% - 24px)); }
+.inventory-dialog .field { gap: 6px; }
+.inventory-dialog textarea { width: 100%; min-height: 150px; resize: vertical; }

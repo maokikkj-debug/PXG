@@ -182,7 +182,23 @@
             <label class="field"><span>Nível</span><input name="level" type="number" min="1" max="20" value="1" required></label>
             <label class="field"><span>XP atual</span><input name="xp" type="number" min="0" max="9999" value="0" required></label>
             <label class="field full"><span>Frase ou lema</span><input name="tagline" maxlength="180" placeholder="Uma frase que representa o personagem"></label>
-            <label class="field full"><span>Retrato do personagem</span><input id="portrait-file" name="portrait_file" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG ou WebP; até 5 MB. A imagem fica privada e só é exibida a quem pode ver a ficha.</small></label>
+            <div class="field full" id="portrait-editor">
+              <label for="portrait-file">Retrato do personagem</label>
+              <input id="portrait-file" name="portrait_file" type="file" accept="image/png,image/jpeg,image/webp">
+              <small>PNG, JPG ou WebP, até 5 MB. A imagem fica privada.</small>
+              <div id="portrait-adjustments" class="portrait-adjustments hidden">
+                <div class="portrait portrait-preview"><img id="portrait-preview" alt="Prévia do retrato na ficha"></div>
+                <div class="portrait-controls">
+                  <label for="portrait-zoom">Zoom <output id="portrait-zoom-value" for="portrait-zoom">100%</output></label>
+                  <input id="portrait-zoom" name="portrait_zoom" type="range" min="100" max="300" value="100">
+                  <label for="portrait-x">Posição horizontal</label>
+                  <input id="portrait-x" name="portrait_x" type="range" min="0" max="100" value="50">
+                  <label for="portrait-y">Posição vertical</label>
+                  <input id="portrait-y" name="portrait_y" type="range" min="0" max="100" value="50">
+                  <button type="button" class="button secondary" id="reset-portrait">Restaurar enquadramento</button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -233,6 +249,22 @@
         </section>
       </div>
       <footer class="dialog-footer"><button id="delete-character" class="button danger hidden" type="button">Excluir ficha</button><span class="spacer"></span><button id="cancel-editor" class="button secondary" type="button">Cancelar</button><button id="save-character" class="button gold" type="submit">Salvar ficha</button></footer>
+    </form>
+  </dialog>
+  <dialog id="inventory-dialog" class="editor-dialog inventory-dialog" aria-labelledby="inventory-title">
+    <form id="inventory-form" class="editor-form">
+      <header class="dialog-header"><h2 id="inventory-title">Editar inventário</h2></header>
+      <label class="field" for="inventory-items">
+        <span>Itens de <strong id="inventory-character"></strong></span>
+        <textarea id="inventory-items" rows="8" autofocus aria-describedby="inventory-help"></textarea>
+        <small id="inventory-help">Use uma linha por item. Ex.: 2 poções de cura. Apague a linha para remover o item.</small>
+      </label>
+      <p id="inventory-error" class="inline-message hidden" role="alert"></p>
+      <footer class="dialog-footer">
+        <span class="spacer"></span>
+        <button id="cancel-inventory" class="button secondary" type="button">Cancelar</button>
+        <button id="save-inventory" class="button gold" type="submit">Salvar inventário</button>
+      </footer>
     </form>
   </dialog>
 </body>
