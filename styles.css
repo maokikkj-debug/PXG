@@ -206,3 +206,11 @@ html[data-theme] .character-card[data-theme]::before { background: radial-gradie
   color: var(--theme-text, #182c49);
 }
 .content-grid.personal-sheet { grid-template-columns: minmax(0, 1fr); }
+
+.sheet-inventory { white-space: pre-wrap; overflow-wrap: anywhere; }
+#character-dialog .dialog-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--theme-surface, #fbf8f0);
+}

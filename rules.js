@@ -13,3 +13,15 @@ export function xpFor(level){return level>=20?null:(level+1)*10;}
 export function derived(attrs={}, armor=0){return {defense:10+(+attrs.agilidade||0)+(+armor||0),initiative:`1d20 + ${+attrs.instinto||0}`,melee:`1d20 + ${+attrs.forca||0}`,ranged:`1d20 + ${+attrs.agilidade||0}`,power:`1d20 + ${Math.max(+attrs.vontade||0,+attrs.intelecto||0)}`};}
 export function levelUp(level,xp){if(!Number.isInteger(+level)||level<1||level>=20) throw Error("Nível inválido ou limite atingido.");const need=xpFor(+level);if(!Number.isFinite(+xp)||xp<need)throw Error(`São necessários ${need} XP.`);return {level:+level+1,xp:0,hpGain:5};}
 export function validateCharacter(c){if(!String(c.display_name||"").trim()) throw Error("Informe o nome do semideus.");if(!GODS.some(g=>g.name===c.parent_deity)) throw Error("Escolha um progenitor divino válido.");if(+c.level<1||+c.level>20)throw Error("Nível deve ficar entre 1 e 20.");if(+c.hp_current>+c.hp_max) throw Error("PV atual não pode superar PV máximo.");for(const key of Object.keys(ATTRS)){if(!Number.isFinite(+c.attrs[key])||+c.attrs[key]<0||+c.attrs[key]>30)throw Error(`Valor inválido para ${ATTRS[key]}.`);}return true;}
+
+export function sheetList(value) {
+  const entries = Array.isArray(value) ? value : typeof value === "string" ? value.split(/\r?\n/) : [];
+  return entries.filter(item => typeof item === "string").map(item => item.trim()).filter(Boolean);
+}
+
+export function sheetAttributes(data) {
+  return Object.fromEntries(Object.keys(ATTRS).map(key => {
+    const value = Number(data.attrs?.[key] ?? data.attributes?.[key] ?? 0);
+    return [key, Number.isFinite(value) ? value : 0];
+  }));
+}

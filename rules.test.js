@@ -8,3 +8,11 @@ test("PDF system content has ten gods and searchable catalog",()=>{assert.equal(
 test("reject invalid sheet values and accept valid sheet",()=>{const c={display_name:"Davi",parent_deity:"Atena",level:1,hp_current:20,hp_max:20,attrs:{forca:3,agilidade:2,intelecto:2,presenca:1,instinto:1,vontade:0}};assert.equal(validateCharacter(c),true);assert.throws(()=>validateCharacter({...c,hp_current:21}),/PV atual/);assert.throws(()=>validateCharacter({...c,parent_deity:""}),/progenitor/);});
 test("each requested deity maps to its own bundled reference background",()=>{const pairs={Atena:"athena",Poseidon:"poseidon",Apolo:"apollo",Hermes:"hermes",Hefesto:"hephaestus",Ares:"ares",Zeus:"zeus",Hades:"hades"};for(const [deity,id] of Object.entries(pairs)){const theme=themeForDeity(deity);assert.equal(theme.id,id);assert.equal(theme.image,`./theme-${id}.webp`);assert.ok(theme.symbol);assert.ok(theme.accent);}});
 test("theme survives JSON save/load and is resolved for master and player views",()=>{const stored=JSON.parse(JSON.stringify({parent_deity:"Poseidon",data:{theme:themeForDeity("Poseidon").id}}));assert.equal(themeForCharacter(stored).id,"poseidon");assert.equal(stored.data.theme,"poseidon");assert.equal(themeForCharacter({parent_deity:"Deméter",data:{}}).id,"olympus");assert.equal(Object.keys(THEMES).length,9);});
+
+test("legacy sheets keep text inventory and stored attributes when opened for editing",async()=>{
+  const {sheetList,sheetAttributes}=await import("./rules.js");
+  assert.deepEqual(sheetList("Espada\r\n\n Mochila "),["Espada","Mochila"]);
+  assert.deepEqual(sheetList(["Escudo","Poção"]),["Escudo","Poção"]);
+  assert.equal(sheetAttributes({attributes:{forca:"3"}}).forca,3);
+  assert.equal(sheetAttributes({attrs:{forca:0},attributes:{forca:3}}).forca,0);
+});
