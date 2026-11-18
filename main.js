@@ -72,7 +72,11 @@ $("#own-sheet").onchange = event => {
   selected = characters.find(row => row.id === event.target.value && canEditSheet(row)) || null;
   render();
 };
-function dataOf(c){const data=c.data&&typeof c.data==="object"?c.data:{attrs:{},hp_max:20,hp_current:20};return {...data,theme:themeForCharacter(c).id};}
+function dataOf(character) {
+  const data = {...(character.data || {attrs:{},hp_max:20,hp_current:20})};
+  delete data.mana;
+  return {...data,theme:themeForCharacter(character).id};
+}
 function visible(){const term=$("#search-characters").value.toLocaleLowerCase("pt-BR"),deity=$("#filter-deity").value;return characters.filter(c=>(!deity||c.parent_deity===deity)&&(!term||[c.display_name,c.parent_deity,dataOf(c).player_name,...profiles.filter(profile=>profile.id===c.owner_id).flatMap(profile=>[profile.display_name,profile.email])].join(" ").toLocaleLowerCase("pt-BR").includes(term)));}
 function render(){refreshSheetPermissions();const rows=master?visible():characters,activeTheme=selected?themeForCharacter(selected):null;if(activeTheme)document.documentElement.dataset.theme=activeTheme.id;else delete document.documentElement.dataset.theme;$("#metric-count").textContent=characters.length;$("#visible-count").textContent=rows.length;$("#metric-level").textContent=characters.length?(characters.reduce((n,c)=>n+(+c.level||1),0)/characters.length).toFixed(1):"—";$("#character-list").innerHTML=!master?"":rows.length?rows.map(c=>{const theme=themeForCharacter(c);return `<button class="character-card ${selected?.id===c.id?"selected":""}" data-theme="${theme.id}" data-id="${esc(c.id)}"><span class="avatar">${esc(c.display_name?.slice(0,1)||"✦")}</span><span><b>${esc(c.display_name)}</b><small>${esc(c.parent_deity)} · Nível ${c.level}${master?` · ${esc(dataOf(c).player_name||profiles.find(p=>p.id===c.owner_id)?.email||"")}`:""}</small></span><span class="chevron">›</span></button>`}).join(""):"<p class='empty-state'>Nenhuma ficha ainda. Crie uma para começar sua jornada.</p>";$$(".character-card").forEach(b=>b.onclick=()=>{selected=characters.find(x=>x.id===b.dataset.id);render();});$("#character-detail").innerHTML=selected&&rows.some(x=>x.id===selected.id)?detail(selected):`<div class="detail-empty"><span>✧</span><h2>${master?"Escolha uma ficha":"Sua ficha ainda não foi criada"}</h2><p>${master?"Selecione um personagem na lista.":"Use Nova ficha para criar seu semideus."}</p></div>`;if(activeTheme)$("#character-detail").dataset.theme=activeTheme.id;else delete $("#character-detail").dataset.theme;renderFullSheet();$$("[data-open-sheet]").forEach(b=>b.onclick=openFullSheet);$$("[data-edit]").forEach(b=>b.onclick=()=>openEditor(selected));$("#progress-list").innerHTML=characters.map(c=>{const d=dataOf(c),need=xpFor(+c.level),theme=themeForCharacter(c);return `<article class="progress-card" data-theme="${theme.id}"><div><p class="kicker">${esc(c.parent_deity)}</p><h3>${esc(c.display_name)}</h3><p>Nível ${c.level} · ${+d.xp||0} XP ${need?`/ ${need} XP para evoluir`:"· nível máximo"}</p></div><button class="button secondary" data-progress="${c.id}" ${!master?"disabled":""}>Aplicar evolução</button></article>`}).join("")||"<p class='empty-state'>Crie uma ficha para acompanhar a progressão.</p>";$$("[data-progress]").forEach(b=>b.onclick=()=>progress(b.dataset.progress));renderItems();renderRules();}
 function detail(c,full=false){const d=dataOf(c),a=sheetAttributes(d),stats=derived(a,d.armor_bonus||0),g=GODS.find(x=>x.name===c.parent_deity),theme=themeForCharacter(c);const photo=c.portraitUrl||d.portrait_url;const portrait=photo?`<img class="portrait" src="${esc(photo)}" alt="Retrato de ${esc(c.display_name)}">`:`<div class="portrait-placeholder">${esc(c.display_name?.slice(0,1)||"✦")}</div>`;return `<div class="theme-banner" data-theme="${theme.id}"><span class="theme-banner-symbol" aria-hidden="true">${theme.symbol}</span><div><p class="kicker">FICHA · FILHO(A) DE ${esc(theme.deity.toLocaleUpperCase("pt-BR"))}</p><h2>${esc(theme.epithet)}</h2></div><span class="theme-banner-level">NÍVEL ${c.level}</span></div><div class="hero-card" data-theme="${theme.id}">${portrait}<div class="hero-info"><p class="kicker">${esc(c.parent_deity)} · NÍVEL ${c.level}</p><h2${full?' id="full-sheet-title" tabindex="-1"':""}>${esc(c.display_name)}</h2><p>${esc(d.tagline||"Filho do Olimpo, herói da campanha.")}</p><div class="sheet-actions">${master&&!full?'<button type="button" class="button gold" data-open-sheet>Abrir ficha</button>':''}${canEditSheet(c)?'<button type="button" class="button secondary" data-edit>Editar ficha</button>':''}</div></div></div><div class="stat-strip" data-theme="${theme.id}"><div><small>PONTOS DE VIDA</small><b>${d.hp_current??20}<i> / ${d.hp_max??20}</i></b></div><div><small>DEFESA</small><b>${stats.defense}</b></div><div><small>XP</small><b>${d.xp||0}<i> / ${xpFor(+c.level)||"—"}</i></b></div></div><div class="detail-block" data-theme="${theme.id}"><h3>Atributos</h3><div class="attribute-bars">${Object.entries(ATTRS).map(([k,n])=>`<div><span>${n}</span><b>${a[k]||0}</b></div>`).join("")}</div></div><div class="detail-block" data-theme="${theme.id}"><h3>Poder de linhagem</h3><p><b>${esc(g?.power||"Não registrado")}</b>${g?' <span class="muted">· 1 uso por combate</span>':''}</p></div><div class="detail-block" data-theme="${theme.id}"><h3>Perícias & poderes</h3><p>${esc([...sheetList(d.skills),...sheetList(d.attacks)].join(" · ")||"Sem registros")}</p></div><div class="detail-block" data-theme="${theme.id}"><h3>História</h3><p>${esc(d.backstory||"Ainda não registrada.")}</p></div>${full?"":`<div class="detail-block"><h3>Inventário</h3><p class="sheet-inventory">${esc(sheetList(d.inventory).join("\n")||"Sem itens.")}</p></div>`}`;}
@@ -145,7 +149,6 @@ function renderFullSheet() {
       <h3>Durante a sessão</h3>
       <form class="sheet-resources">
         <label>PV atual <input name="hp_current" type="number" required min="0" max="${esc(hpMax)}" value="${esc(data.hp_current ?? hpMax)}"></label>
-        <label>Mana <input name="mana" type="number" required min="0" max="999" value="${esc(data.mana ?? 0)}"></label>
         <label>XP <input name="xp" type="number" required min="0" max="9999" value="${esc(data.xp ?? 0)}"></label>
         <button class="button gold" type="submit">Salvar recursos</button>
       </form>
@@ -178,9 +181,9 @@ async function saveSheetResources(event,row) {
   if (!master || selected?.id !== row.id || currentPage !== "personagem") return;
   const form = event.currentTarget;
   const fields = new FormData(form);
-  const data = {...row.data};
+  const data = dataOf(row);
   delete data.portrait_url;
-  for (const key of ["hp_current","mana","xp"]) data[key] = Number(fields.get(key));
+  for (const key of ["hp_current","xp"]) data[key] = Number(fields.get(key));
   const button = form.querySelector("button");
   button.disabled = true;
   try {
@@ -289,7 +292,7 @@ characterForm.onsubmit = async event => {
   const ownerId = isMaster ? fields.get("owner_id") : accountId;
   const deity = String(fields.get("parent_deity") || "");
   const attrs = Object.fromEntries(Object.keys(ATTRS).map(key => [key,number(`attr_${key}`)]));
-  const previous = target?.data || {};
+  const previous = target ? dataOf(target) : {};
   const data = {
     ...previous,
     theme:themeForDeity(deity).id, attrs, age:number("age") || null,
@@ -298,7 +301,7 @@ characterForm.onsubmit = async event => {
   if (previous.attributes && typeof previous.attributes === "object") {
     data.attributes = {...previous.attributes, ...attrs};
   }
-  for (const key of ["xp","armor_bonus","mana","favor","dracmas","gold","silver"]) data[key] = number(key);
+  for (const key of ["xp","armor_bonus","favor","dracmas","gold","silver"]) data[key] = number(key);
   for (const key of ["player_name","cabin","origin","tagline","lineage","path","personality","backstory","campaign_notes"]) {
     data[key] = fields.get(key);
   }
@@ -352,5 +355,5 @@ characterForm.onsubmit = async event => {
 };
 $("#delete-character").onclick=async()=>{if(!canEditSheet(selected)||!confirm(`Excluir a ficha de ${selected.display_name}?`))return;const {error}=await supabase.from("rpg_characters").delete().eq("id",selected.id);if(error)return notify(error.message,true);selected=null;$("#character-dialog").close();await loadData();notify("Ficha excluída.");};
 async function progress(id){const c=characters.find(x=>x.id===id);if(!c||!master)return;try{const result=levelUp(c.level,dataOf(c).xp||0),d=dataOf(c);const {data,error}=await supabase.from("rpg_characters").update({level:result.level,data:{...d,xp:0,hp_max:(+d.hp_max||20)+5,hp_current:(+d.hp_current||20)+5}}).eq("id",id).select().single();if(error)throw error;selected=data;await loadData();notify(`Subiu para o nível ${result.level}: +5 PV máximo.`);}catch(e){notify(e.message,true);}}
-$("#export-campaign").onclick=()=>{if(!master)return;const blob=new Blob([JSON.stringify(characters,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="campanha-herois-do-olimpo.json";a.click();URL.revokeObjectURL(a.href);};
+$("#export-campaign").onclick=()=>{if(!master)return;const blob=new Blob([JSON.stringify(characters.map(({portraitUrl,...row})=>({...row,data:dataOf(row)})),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="campanha-herois-do-olimpo.json";a.click();URL.revokeObjectURL(a.href);};
 const {data:{session}}=await supabase.auth.getSession();if(session?.user)await openApp(session.user);
